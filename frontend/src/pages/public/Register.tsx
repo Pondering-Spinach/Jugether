@@ -6,29 +6,35 @@ export function Register() {
         },
     ) {
         e.preventDefault();
-        const res = await fetch("/register", {
+        const form = new FormData(e.target);
+        const username = String(form.get("username"));
+        // Better Auth's username plugin is built on email/password. Local-only
+        // accounts do not collect an email address, so use a stable internal one.
+        const email = `${btoa(username).replaceAll("=", "")}@local.test`;
+        const res = await fetch("/api/auth/sign-up/email", {
             method: "POST",
-            body: new FormData(e.target),
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({
+                email,
+                name: username,
+                username,
+                password: form.get("password"),
+            }),
         });
-        if (res.status === 200) {
-            window.open("/portal");
-        } else {
-            e.target.reset();
-        }
+        if (res.ok) window.location.href = "/";
+        else e.target.reset();
     }
 
     return (
-        <form
-            class="flex gap-4 m-4"
-            action="/login"
-            method="post"
-            onSubmit={onSubmit}
-        >
+        <form class="flex gap-4 m-4" onSubmit={onSubmit}>
             <input
                 class="input input-bordered"
                 name="username"
                 type="text"
                 required
+                minLength={3}
+                maxLength={30}
+                pattern="[A-Za-z0-9_.]+"
                 placeholder="username"
             />
             <input

@@ -1,22 +1,11 @@
-import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
+import { sqliteTable, text } from "drizzle-orm/sqlite-core";
 import { parties } from "../party/db";
 
-export const users = sqliteTable("users", {
-    id: text().notNull().primaryKey(),
-    name: text().notNull().unique(),
-    password: text().notNull(),
-});
+// Better Auth owns account users and authenticated sessions. Keep this alias so
+// application tables can retain their existing user foreign-key imports.
+export { user as users } from "../../db/auth-schema";
 
-export const userSessions = sqliteTable("userSessions", {
-    id: text().notNull().primaryKey(),
-    userId: text()
-        .notNull()
-        .unique()
-        .references(() => users.id),
-    origin: text().notNull(),
-    start: integer().notNull(),
-});
-
+// Anonymous party participation is application state, not an auth session.
 export const guestSessions = sqliteTable("guestSessions", {
     id: text().notNull().primaryKey(),
     partyId: text()

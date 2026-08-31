@@ -1,7 +1,8 @@
 import { eq } from "drizzle-orm";
+import { auth } from "../../auth";
 import { db } from "../../db";
 import { getSessionId } from "../../routing/utils";
-import { guestSessions, userSessions } from "./db";
+import { guestSessions } from "./db";
 
 export const Guest = {
     getPartyId: async function (req: Request) {
@@ -17,12 +18,7 @@ export const Guest = {
 
 export const User = {
     getUserId: async function (req: Request) {
-        const sessionId = getSessionId(req);
-        if (!sessionId) return null;
-        const res = await db.query.userSessions.findFirst({
-            where: eq(userSessions.id, sessionId),
-            columns: { userId: true },
-        });
-        return res?.userId ?? null;
+        const session = await auth.api.getSession({ headers: req.headers });
+        return session?.user.id ?? null;
     },
 };

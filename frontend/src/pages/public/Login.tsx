@@ -6,24 +6,21 @@ export function Login() {
         },
     ) {
         e.preventDefault();
-        const res = await fetch("/login", {
+        const form = new FormData(e.target);
+        const res = await fetch("/api/auth/sign-in/username", {
             method: "POST",
-            body: new FormData(e.target),
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({
+                username: form.get("username"),
+                password: form.get("password"),
+            }),
         });
-        if (res.status === 200) {
-            window.location.href = "/host?id=" + (await res.text());
-        } else {
-            e.target.reset();
-        }
+        if (res.ok) window.location.href = "/";
+        else e.target.reset();
     }
 
     return (
-        <form
-            class="flex gap-4 m-4"
-            action="/login"
-            method="post"
-            onSubmit={onSubmit}
-        >
+        <form class="flex gap-4 m-4" onSubmit={onSubmit}>
             <input
                 class="input input-bordered"
                 name="username"

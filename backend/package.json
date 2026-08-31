@@ -6,11 +6,13 @@
         "dev": "tsx watch --enable-source-maps index.ts",
         "debug": "tsx watch --inspect=9229 --enable-source-maps index.ts",
         "start": "tsx --enable-source-maps index.ts",
-        "build": "npm --prefix ../frontend run build && tsc --noEmit"
+        "build": "npm --prefix ../frontend run build && tsc --noEmit",
+        "db:migrate": "tsx db/migrate.ts"
     },
     "dependencies": {
         "@hono/node-server": "^2.1.1",
-        "better-sqlite3": "^13.0.3",
+        "better-auth": "^1.7.2",
+        "better-sqlite3": "^12.11.1",
         "dotenv": "^17.4.2",
         "drizzle-orm": "^0.45.2",
         "hono": "^4.13.5"

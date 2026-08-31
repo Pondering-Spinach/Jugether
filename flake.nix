@@ -44,7 +44,7 @@
               ln -s ${./communication} ../communication
             '';
             npmDepsFetcherVersion = 2;
-            npmDepsHash = "sha256-NFlaDUt9nG7AEJjMR78eNk5ihGFhLawXqHmaQbxBJw0=";
+            npmDepsHash = "sha256-g+pb+KAbV+JA4n6jPNZTKq2LosghPjZr4LRIaq+m8S4=";
             npmFlags = [ "--legacy-peer-deps" ];
             nativeBuildInputs = [ pkgs.makeWrapper ];
             buildPhase = ''
@@ -61,6 +61,7 @@
               makeWrapper ${pkgs.nodejs_24}/bin/node "$out/bin/jugether" \
                 --add-flags "$out/app/backend/node_modules/tsx/dist/cli.mjs" \
                 --add-flags "$out/app/backend/index.ts" \
+                --run "cd $out/app/backend && ${pkgs.nodejs_24}/bin/node $out/app/backend/node_modules/tsx/dist/cli.mjs db/migrate.ts" \
                 --run "cd $out/app/backend"
             '';
           };
