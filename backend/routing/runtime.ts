@@ -3,6 +3,8 @@ export type RuntimeBindings = {
     clientIp?: string;
 };
 
-export const getRuntimeBindings = (incoming: { socket: { remoteAddress?: string } }): RuntimeBindings => ({
+export const getRuntimeBindings = (incoming: {
+    socket: { remoteAddress?: string };
+}): RuntimeBindings => ({
     clientIp: incoming.socket.remoteAddress,
 });

@@ -25,7 +25,9 @@ export async function runYtdlp(args: string[]) {
     await acquireProcessSlot();
     try {
         return await new Promise<string>((resolve, reject) => {
-            const child = spawn(ytdlpExec, args, { stdio: ["ignore", "pipe", "pipe"] });
+            const child = spawn(ytdlpExec, args, {
+                stdio: ["ignore", "pipe", "pipe"],
+            });
             const stdout: Buffer[] = [];
             const stderr: Buffer[] = [];
 
@@ -34,7 +36,12 @@ export async function runYtdlp(args: string[]) {
             child.once("error", reject);
             child.once("close", (code) => {
                 if (code === 0) resolve(Buffer.concat(stdout).toString("utf8"));
-                else reject(new Error(`yt-dlp exited with code ${code}: ${Buffer.concat(stderr).toString("utf8")}`));
+                else
+                    reject(
+                        new Error(
+                            `yt-dlp exited with code ${code}: ${Buffer.concat(stderr).toString("utf8")}`,
+                        ),
+                    );
             });
         });
     } finally {

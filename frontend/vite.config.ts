@@ -17,7 +17,9 @@ const flatPageOutputs = (): Plugin => ({
     name: "flat-page-outputs",
     enforce: "post",
     generateBundle(_, bundle) {
-        for (const [sourcePath, outputPath] of Object.entries(pageOutputPaths)) {
+        for (const [sourcePath, outputPath] of Object.entries(
+            pageOutputPaths,
+        )) {
             const output = bundle[sourcePath];
             if (!output || output.type !== "asset")
                 throw new Error(`Missing HTML build output: ${sourcePath}`);

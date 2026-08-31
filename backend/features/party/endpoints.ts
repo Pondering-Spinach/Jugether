@@ -1,12 +1,12 @@
 import { serveStatic } from "@hono/node-server/serve-static";
 import { and, eq } from "drizzle-orm";
-import type { App } from "../../routing/app";
 import { db } from "../../db";
+import type { App } from "../../routing/app";
+import { frontendDist } from "../../routing/static";
 import { getSessionId } from "../../routing/utils";
 import { guestSessions } from "../user/db";
 import { User } from "../user/services";
 import { parties } from "./db";
-import { frontendDist } from "../../routing/static";
 import { userHostsParty } from "./services";
 
 const hostPage = serveStatic({ root: frontendDist, path: "host.html" });
@@ -22,7 +22,8 @@ export const registerPartyRoutes = (app: App) => {
         // https://www.npmjs.com/package/@fingerprintjs/fingerprintjs
         const userId = await User.getUserId(c.req.raw);
         if (!userId) return c.redirect("/party?id=" + partyId);
-        if (!(await userHostsParty(userId, partyId))) return c.redirect("/portal");
+        if (!(await userHostsParty(userId, partyId)))
+            return c.redirect("/portal");
 
         return hostPage(c, async () => undefined);
     });
@@ -35,7 +36,10 @@ export const registerPartyRoutes = (app: App) => {
         if (!userId || !(await userHostsParty(userId, partyId)))
             return new Response(undefined, { status: 400 });
 
-        await db.update(parties).set({ active: false }).where(eq(parties.id, partyId));
+        await db
+            .update(parties)
+            .set({ active: false })
+            .where(eq(parties.id, partyId));
         const newPartyId = crypto.randomUUID();
         await db.insert(parties).values({ id: newPartyId, hostId: userId });
         return new Response(newPartyId);
@@ -48,16 +52,21 @@ export const registerPartyRoutes = (app: App) => {
 
         const existingSessionId = getSessionId(c.req.raw);
         const sessionId = existingSessionId || crypto.randomUUID();
-        if (!(await db.query.parties.findFirst({
-            where: and(eq(parties.active, true), eq(parties.id, partyId)),
-            columns: { id: true },
-        })))
+        if (
+            !(await db.query.parties.findFirst({
+                where: and(eq(parties.active, true), eq(parties.id, partyId)),
+                columns: { id: true },
+            }))
+        )
             return new Response(undefined, { status: 400 });
 
-        await db.insert(guestSessions).values({ id: sessionId, partyId }).onConflictDoUpdate({
-            target: guestSessions.id,
-            set: { partyId },
-        });
+        await db
+            .insert(guestSessions)
+            .values({ id: sessionId, partyId })
+            .onConflictDoUpdate({
+                target: guestSessions.id,
+                set: { partyId },
+            });
         if (!existingSessionId)
             c.header("Set-Cookie", `sessionId=${sessionId}; SameSite=Strict`);
         return guestPage(c, async () => undefined);

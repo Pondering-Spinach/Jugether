@@ -22,7 +22,8 @@ const port = Number(process.env["PORT"] ?? 5222);
 serve({
     port,
     // Pass Node connection details through the existing runtime adapter.
-    fetch: (request, { incoming }) => app.fetch(request, getRuntimeBindings(incoming)),
+    fetch: (request, { incoming }) =>
+        app.fetch(request, getRuntimeBindings(incoming)),
 });
 
 console.log(`server running on port ${port}`);
