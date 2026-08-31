@@ -1,3 +1,4 @@
+import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 import { registerPartyRoutes } from "./features/party/endpoints";
 import { registerQueueRoutes } from "./features/queue/endpoints";
@@ -17,10 +18,11 @@ registerPartyRoutes(app);
 registerQueueRoutes(app);
 registerUserRoutes(app);
 
-Bun.serve({
-    port: 5222,
-    idleTimeout: -1,
-    fetch: (request, server) => app.fetch(request, getRuntimeBindings(request, server)),
+const port = Number(process.env["PORT"] ?? 5222);
+serve({
+    port,
+    // Pass Node connection details through the existing runtime adapter.
+    fetch: (request, { incoming }) => app.fetch(request, getRuntimeBindings(incoming)),
 });
 
-console.log("server running on port 5222");
+console.log(`server running on port ${port}`);

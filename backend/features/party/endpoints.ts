@@ -1,3 +1,4 @@
+import { serveStatic } from "@hono/node-server/serve-static";
 import { and, eq } from "drizzle-orm";
 import type { App } from "../../routing/app";
 import { db } from "../../db";
@@ -5,7 +6,12 @@ import { getSessionId } from "../../routing/utils";
 import { guestSessions } from "../user/db";
 import { User } from "../user/services";
 import { parties } from "./db";
+import { frontendDist } from "../../routing/static";
 import { userHostsParty } from "./services";
+
+const hostPage = serveStatic({ root: frontendDist, path: "host.html" });
+const guestPage = serveStatic({ root: frontendDist, path: "guest.html" });
+const publicPage = serveStatic({ root: frontendDist, path: "index.html" });
 
 export const registerPartyRoutes = (app: App) => {
     app.get("/host", async (c) => {
@@ -18,7 +24,7 @@ export const registerPartyRoutes = (app: App) => {
         if (!userId) return c.redirect("/party?id=" + partyId);
         if (!(await userHostsParty(userId, partyId))) return c.redirect("/portal");
 
-        return new Response(Bun.file("../frontend/dist/src/pages/host/index.html"));
+        return hostPage(c, async () => undefined);
     });
 
     app.delete("/party", async (c) => {
@@ -38,8 +44,7 @@ export const registerPartyRoutes = (app: App) => {
     app.get("/party", async (c) => {
         //TODO: forward hosts (don't serve party to hosts)
         const partyId = c.req.query("id");
-        if (!partyId)
-            return new Response(Bun.file("../frontend/dist/src/pages/public/index.html"));
+        if (!partyId) return publicPage(c, async () => undefined);
 
         const existingSessionId = getSessionId(c.req.raw);
         const sessionId = existingSessionId || crypto.randomUUID();
@@ -53,10 +58,9 @@ export const registerPartyRoutes = (app: App) => {
             target: guestSessions.id,
             set: { partyId },
         });
-        return new Response(
-            Bun.file("../frontend/dist/src/pages/guest/index.html"),
-            existingSessionId ? undefined : { headers: { "Set-Cookie": `sessionId=${sessionId}; SameSite=Strict` } },
-        );
+        if (!existingSessionId)
+            c.header("Set-Cookie", `sessionId=${sessionId}; SameSite=Strict`);
+        return guestPage(c, async () => undefined);
     });
 
     app.get("/parties", async (c) => {

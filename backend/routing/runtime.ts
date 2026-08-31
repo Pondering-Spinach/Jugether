@@ -1,13 +1,8 @@
-import type { Server } from "bun";
-
-/** Runtime details that routes need without depending on Bun's Server API. */
+/** Runtime details that routes need without depending on a server implementation. */
 export type RuntimeBindings = {
     clientIp?: string;
 };
 
-export const getRuntimeBindings = (
-    request: Request,
-    server: Server<unknown>,
-): RuntimeBindings => ({
-    clientIp: server.requestIP(request)?.address,
+export const getRuntimeBindings = (incoming: { socket: { remoteAddress?: string } }): RuntimeBindings => ({
+    clientIp: incoming.socket.remoteAddress,
 });

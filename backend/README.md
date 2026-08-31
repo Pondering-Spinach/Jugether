@@ -1,15 +1,26 @@
-# jugether
+# jugether backend
 
-To install dependencies:
+## Development
 
-```bash
-bun install
-```
-
-To run:
+Enter the repository's Node.js 24 development shell and run the backend from this directory:
 
 ```bash
-bun run index.ts
+nix develop
+cd backend
+npm install
+npm run dev
 ```
 
-This project was created using `bun init` in bun v1.1.33. [Bun](https://bun.sh) is a fast all-in-one JavaScript runtime.
+`npm run dev` watches backend TypeScript files. Use `npm run debug` to run the
+same watcher with the Node inspector on `127.0.0.1:9229`; source maps are
+enabled for both commands.
+
+The server listens on port `5222` by default. Set `PORT` to override it.
+
+```bash
+npm run build
+npm start
+```
+
+`npm run build` builds the frontend into `backend/public` and type-checks the
+backend. `tsx` executes the backend directly on Node.js.

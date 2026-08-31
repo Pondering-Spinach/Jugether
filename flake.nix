@@ -10,7 +10,7 @@
         let pkgs = nixpkgs.legacyPackages.${system};
         in pkgs.buildEnv {
           name = "ytbunty-tools";
-          paths = with pkgs; [ bun git sqlite ];
+          paths = with pkgs; [ nodejs_24 git sqlite yt-dlp ];
         };
     in
     {

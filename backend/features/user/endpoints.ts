@@ -4,6 +4,7 @@ import type { App } from "../../routing/app";
 import { db } from "../../db";
 import { getSessionId } from "../../routing/utils";
 import { users, userSessions } from "./db";
+import { hashPassword, verifyPassword } from "./password";
 
 export const registerUserRoutes = (app: App) => {
     app.post("/login", async (c) => {
@@ -20,7 +21,7 @@ export const registerUserRoutes = (app: App) => {
             where: eq(users.name, username as string),
             columns: { id: true, password: true },
         });
-        if (!res?.password || !(await Bun.password.verify(password as string, res.password)))
+        if (!res?.password || !(await verifyPassword(password as string, res.password)))
             return new Response(undefined, { status: 401 });
 
         await db.insert(userSessions).values({
@@ -60,7 +61,7 @@ export const registerUserRoutes = (app: App) => {
         const formData = await request.formData();
         const username = formData.get("username");
         const password = formData.get("password");
-        const hashedPassword = await Bun.password.hash(password as string);
+        const hashedPassword = await hashPassword(password as string);
         const insert = await db.insert(users).values({
             id: crypto.randomUUID(),
             name: username as string,
