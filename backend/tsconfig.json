@@ -26,9 +26,9 @@
         "noPropertyAccessFromIndexSignature": true,
         "noUncheckedIndexedAccess": true,
 
-        "baseUrl": ".",
         "paths": {
-            "communication/*": ["../communication/*"]
+            "communication/*": ["../communication/*"],
+            "db/*": ["./db/*"]
         }
     }
 }

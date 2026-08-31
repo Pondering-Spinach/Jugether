@@ -2,7 +2,6 @@ import preact from "@preact/preset-vite";
 import tailwindcss from "@tailwindcss/vite";
 import { resolve } from "node:path";
 import { defineConfig, type Plugin } from "vite";
-import tsconfigPaths from "vite-tsconfig-paths";
 
 const pageOutputPaths = {
     "src/pages/public/index.html": "index.html",
@@ -24,15 +23,21 @@ const flatPageOutputs = (): Plugin => ({
             if (!output || output.type !== "asset")
                 throw new Error(`Missing HTML build output: ${sourcePath}`);
             delete bundle[sourcePath];
-            output.fileName = outputPath;
-            bundle[outputPath] = output;
+            this.emitFile({
+                type: "asset",
+                fileName: outputPath,
+                source: output.source,
+            });
         }
     },
 });
 
 // https://vite.dev/config/
 export default defineConfig({
-    plugins: [tailwindcss(), preact(), tsconfigPaths(), flatPageOutputs()],
+    plugins: [tailwindcss(), preact(), flatPageOutputs()],
+    resolve: {
+        tsconfigPaths: true,
+    },
     server: {
         port: 3000,
         strictPort: true,
@@ -55,15 +60,24 @@ export default defineConfig({
     build: {
         target: "esnext",
         // Keep the deployable frontend beside the Node server.
-        outDir: resolve(__dirname, "../backend/public"),
+        outDir: resolve(import.meta.dirname, "../backend/public"),
         emptyOutDir: true,
         sourcemap: process.env.VITE_SOURCE_MAP === "true" ? true : false,
         rollupOptions: {
             input: {
-                guest: resolve(__dirname, "src/pages/guest/index.html"),
-                host: resolve(__dirname, "src/pages/host/index.html"),
-                portal: resolve(__dirname, "src/pages/portal/index.html"),
-                public: resolve(__dirname, "src/pages/public/index.html"),
+                guest: resolve(
+                    import.meta.dirname,
+                    "src/pages/guest/index.html",
+                ),
+                host: resolve(import.meta.dirname, "src/pages/host/index.html"),
+                portal: resolve(
+                    import.meta.dirname,
+                    "src/pages/portal/index.html",
+                ),
+                public: resolve(
+                    import.meta.dirname,
+                    "src/pages/public/index.html",
+                ),
             },
         },
     },
