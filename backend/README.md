@@ -17,6 +17,9 @@ enabled for both commands.
 
 The server listens on port `5222` by default. Set `PORT` to override it.
 
+SQLite uses `test.db` in the backend working directory by default. Set
+`DATABASE_PATH` to an absolute path on local persistent storage for deployments.
+
 ```bash
 npm run build
 npm start

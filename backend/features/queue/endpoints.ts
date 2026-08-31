@@ -4,7 +4,7 @@ import type {
     PlacedVote,
     QueueVideo,
 } from "communication/queue";
-import { and, eq, isNull } from "drizzle-orm";
+import { and, eq, isNull, or } from "drizzle-orm";
 import { db } from "../../db";
 import type { App } from "../../routing/app";
 import { getSessionId } from "../../routing/utils";
@@ -239,30 +239,17 @@ export const registerQueueRoutes = (app: App) => {
             const partyId = getPartyIdFromHeader(req);
             if (!partyId) return new Response(undefined, { status: 400 });
 
-            const guestVotes = await db.query.votes.findMany({
-                where: eq(votes.sessionId, sessionId),
-                with: {
-                    queueEntry: {
-                        columns: {
-                            videoId: true,
-                            partyId: true,
-                            playedAt: true,
-                        },
-                    },
-                },
-            });
-
-            const ownVotes: OwnVote[] = guestVotes
-                //TODO: maybe don't filter in memory?
-                .filter(
-                    (vote) =>
-                        vote.queueEntry.partyId === partyId &&
-                        !vote.queueEntry.playedAt,
-                )
-                .map((vote) => ({
-                    video: vote.queueEntry.videoId,
-                    positive: vote.positive,
-                }));
+        const ownVotes: OwnVote[] = await db
+            .select({ video: queues.videoId, positive: votes.positive })
+            .from(votes)
+            .innerJoin(queues, eq(votes.queueEntry, queues.id))
+            .where(
+                and(
+                    eq(votes.sessionId, sessionId),
+                    eq(queues.partyId, partyId),
+                    or(isNull(queues.playedAt), eq(queues.playedAt, 0)),
+                ),
+            );
             return new Response(JSON.stringify(ownVotes));
     });
 
