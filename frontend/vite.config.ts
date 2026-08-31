@@ -38,23 +38,6 @@ export default defineConfig({
     resolve: {
         tsconfigPaths: true,
     },
-    server: {
-        port: 3000,
-        strictPort: true,
-        // Keep browser requests same-origin during development while Vite owns
-        // HTML, transformed modules, and its HMR WebSocket.
-        proxy: {
-            "/api/auth": "http://127.0.0.1:5222",
-            "/audioUrl": "http://127.0.0.1:5222",
-            "/host": "http://127.0.0.1:5222",
-            "/parties": "http://127.0.0.1:5222",
-            "/party": "http://127.0.0.1:5222",
-            "/portal": "http://127.0.0.1:5222",
-            "/queue": "http://127.0.0.1:5222",
-            "/search": "http://127.0.0.1:5222",
-            "/searchChannel": "http://127.0.0.1:5222",
-        },
-    },
     build: {
         target: "esnext",
         // Keep the deployable frontend beside the Node server.

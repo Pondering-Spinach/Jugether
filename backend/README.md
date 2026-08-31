@@ -11,8 +11,10 @@ npm install
 npm run dev
 ```
 
-`npm run dev` watches backend TypeScript files. Use `npm run debug` to run the
-same watcher with the Node inspector on `127.0.0.1:9229`; source maps are
+`npm run dev` builds the frontend into `public` and watches both frontend and
+backend files. Frontend changes are rebuilt with source maps; reload
+`http://localhost:5222/` to use the new artifact. Use `npm run debug` to run
+the same watchers with the Node inspector on `127.0.0.1:9229`; source maps are
 enabled for both commands.
 
 The server listens on port `5222` by default. Set `PORT` to override it.

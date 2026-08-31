@@ -7,7 +7,8 @@
         "node": ">=24"
     },
     "scripts": {
-        "dev": "vite",
+        "dev": "npm run build:watch",
+        "build:watch": "VITE_SOURCE_MAP=true vite build --watch",
         "build": "vite build",
         "build-actual": "tsc -b && vite build",
         "preview": "vite preview"

@@ -2,25 +2,22 @@
 
 ## Development
 
-Run the frontend and backend in separate terminals from the Node.js 24 flake shell:
+Use the repository's Node.js 24 flake shell, then start the backend:
 
 ```sh
 nix develop
-cd backend && npm run dev
+cd backend
+npm run dev
 ```
 
-```sh
-nix develop
-cd frontend && npm run dev
-```
+The backend development command first builds the frontend into `backend/public`,
+then watches both backend TypeScript and frontend files. Open
+`http://localhost:5222/`.
 
-Vite provides Hot Module Replacement. Open one of its HTML entries directly:
+Frontend changes trigger a fresh production-equivalent Vite build; reload the
+browser to see them. This intentionally does not use Vite's development server
+or HMR, so routing, cookies, assets, and HTML are served exactly as they are in
+deployment. The watcher emits source maps for browser debugging, and `tsx`
+enables backend source maps.
 
-- `http://localhost:3000/src/pages/public/index.html`
-- `http://localhost:3000/src/pages/guest/index.html`
-- `http://localhost:3000/src/pages/host/index.html`
-- `http://localhost:3000/src/pages/portal/index.html`
-
-Vite proxies application API routes to the backend at port 5222, while retaining
-control of HTML, transformed modules, and the HMR WebSocket. Browser DevTools
-maps errors to TypeScript source during development.
+To run only the frontend rebuild watcher, use `cd frontend && npm run dev`.

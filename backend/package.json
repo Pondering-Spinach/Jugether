@@ -3,8 +3,8 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "dev": "tsx watch --enable-source-maps index.ts",
-        "debug": "tsx watch --inspect=9229 --enable-source-maps index.ts",
+        "dev": "sh scripts/dev.sh index.ts",
+        "debug": "sh scripts/dev.sh --inspect=9229 index.ts",
         "start": "tsx --enable-source-maps index.ts",
         "build": "npm --prefix ../frontend run build && tsc --noEmit",
         "db:migrate": "tsx db/migrate.ts"

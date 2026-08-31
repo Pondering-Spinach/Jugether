@@ -33,10 +33,11 @@ export const registerStaticRoutes = (app: App) => {
     app.get("/assets/*", async (c) => {
         //TODO: disable for dev only (source map)
         const request = c.req.raw;
+        const hostname = new URL(request.url).hostname;
         if (
             !getSessionId(request) &&
             !(await User.getUserId(request)) &&
-            new URL(request.url).hostname !== "127.0.0.1"
+            !["127.0.0.1", "::1", "localhost"].includes(hostname)
         )
             return new Response(undefined, { status: 401 });
         return (await asset(c, async () => undefined)) ?? c.notFound();
