@@ -1,128 +1,78 @@
 import { parties } from "db/schema";
 import { and, eq } from "drizzle-orm";
+import type { App } from "../../routing/app";
 import { db } from "../../db";
-import type { RouteDeclaration } from "../../routing/types";
-import { endpoint, getSessionId } from "../../routing/utils";
+import { getSessionId } from "../../routing/utils";
 import { users, userSessions } from "./db";
 
-export const routes: RouteDeclaration[] = [
-    /*
-    [
-        endpoint("GET", "/portal"),
-        async (req, _, server) => {
-            const origin = server.requestIP(req)?.address;
-            const sessionId = getSessionId(req);
-            if (!sessionId || !origin) return Response.redirect("/");
-            if (!(await User.getUserId(req))) return Response.redirect("/");
+export const registerUserRoutes = (app: App) => {
+    app.post("/login", async (c) => {
+        const request = c.req.raw;
+        const origin = c.env.clientIp;
+        const sessionId = getSessionId(request);
+        if (!sessionId || !origin) return new Response(undefined, { status: 400 });
+        const formData = await request.formData();
+        const username = formData.get("username");
+        const password = formData.get("password");
+        if (!username || !password) return new Response(undefined, { status: 400 });
 
-            return new Response(
-                Bun.file("../frontend/dist/src/pages/portal/index.html")
-            );
-        },
-    ],
-    */
+        const res = await db.query.users.findFirst({
+            where: eq(users.name, username as string),
+            columns: { id: true, password: true },
+        });
+        if (!res?.password || !(await Bun.password.verify(password as string, res.password)))
+            return new Response(undefined, { status: 401 });
 
-    [
-        endpoint("POST", "/login"),
-        async (req, _, server) => {
-            const origin = server.requestIP(req)?.address;
-            const sessionId = getSessionId(req);
-            if (!sessionId || !origin)
-                return new Response(undefined, { status: 400 });
-            const formData = await req.formData();
-            const username = formData.get("username");
-            const password = formData.get("password");
-            if (!username || !password)
-                return new Response(undefined, { status: 400 });
+        await db.insert(userSessions).values({
+            id: sessionId,
+            userId: res.id,
+            origin,
+            start: new Date().getTime(),
+        }).onConflictDoUpdate({
+            target: userSessions.userId,
+            set: { id: sessionId, origin, start: new Date().getTime() },
+        });
+        const defaultParty = await db.query.parties.findFirst({
+            where: and(eq(parties.active, true), eq(parties.hostId, res.id)),
+            columns: { id: true },
+        });
+        let partyId = defaultParty?.id;
+        if (!partyId) {
+            partyId = crypto.randomUUID();
+            await db.insert(parties).values({ id: partyId, hostId: res.id });
+        }
+        return new Response(partyId);
+    });
 
-            const res = await db.query.users.findFirst({
-                where: eq(users.name, username as string),
-                columns: { id: true, password: true },
-            });
-            if (
-                !res?.password ||
-                !(await Bun.password.verify(password as string, res.password))
-            )
-                return new Response(undefined, { status: 401 });
+    app.post("/logout", async (c) => {
+        const sessionId = getSessionId(c.req.raw);
+        if (!sessionId) return new Response(undefined, { status: 400 });
+        await db.delete(userSessions).where(eq(userSessions.id, sessionId));
+        return c.redirect("/");
+    });
 
-            await db
-                .insert(userSessions)
-                .values({
-                    id: sessionId,
-                    userId: res?.id!,
-                    origin,
-                    start: new Date().getTime(),
-                })
-                .onConflictDoUpdate({
-                    target: userSessions.userId,
-                    set: {
-                        id: sessionId,
-                        origin,
-                        start: new Date().getTime(),
-                    },
-                });
-
-            const defaultParty = await db.query.parties.findFirst({
-                where: and(
-                    eq(parties.active, true),
-                    eq(parties.hostId, res.id),
-                ),
-                columns: { id: true },
-            });
-
-            let partyId = defaultParty?.id;
-            if (!partyId) {
-                partyId = crypto.randomUUID();
-                await db.insert(parties).values({
-                    id: partyId,
-                    hostId: res.id,
-                });
-            }
-
-            return new Response(partyId);
-        },
-    ],
-
-    [
-        endpoint("POST", "/logout"),
-        async (req) => {
-            const sessionId = getSessionId(req);
-            if (!sessionId) return new Response(undefined, { status: 400 });
-
-            await db.delete(userSessions).where(eq(userSessions.id, sessionId));
-            return Response.redirect("/");
-        },
-    ],
-
-    [
-        //TODO: deprecate
-        endpoint("POST", "/register"),
-        async (req, _, server) => {
-            const origin = server.requestIP(req)?.address;
-            const sessionId = getSessionId(req);
-            if (!sessionId || !origin)
-                return new Response(undefined, { status: 400 });
-            const formData = await req.formData();
-            const username = formData.get("username");
-            const password = formData.get("password");
-            const hashedPassword = await Bun.password.hash(password as string);
-            const insert = await db
-                .insert(users)
-                .values({
-                    id: crypto.randomUUID(),
-                    name: username as string,
-                    password: hashedPassword,
-                })
-                .onConflictDoNothing()
-                .returning();
-            if (!insert[0]?.id) return new Response(undefined, { status: 400 });
-            await db.insert(userSessions).values({
-                id: sessionId,
-                userId: insert[0].id,
-                origin,
-                start: new Date().getTime(),
-            });
-            return new Response();
-        },
-    ],
-];
+    //TODO: deprecate
+    app.post("/register", async (c) => {
+        const request = c.req.raw;
+        const origin = c.env.clientIp;
+        const sessionId = getSessionId(request);
+        if (!sessionId || !origin) return new Response(undefined, { status: 400 });
+        const formData = await request.formData();
+        const username = formData.get("username");
+        const password = formData.get("password");
+        const hashedPassword = await Bun.password.hash(password as string);
+        const insert = await db.insert(users).values({
+            id: crypto.randomUUID(),
+            name: username as string,
+            password: hashedPassword,
+        }).onConflictDoNothing().returning();
+        if (!insert[0]?.id) return new Response(undefined, { status: 400 });
+        await db.insert(userSessions).values({
+            id: sessionId,
+            userId: insert[0].id,
+            origin,
+            start: new Date().getTime(),
+        });
+        return new Response();
+    });
+};

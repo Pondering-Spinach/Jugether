@@ -6,8 +6,8 @@ import type {
 } from "communication/queue";
 import { and, eq, isNull } from "drizzle-orm";
 import { db } from "../../db";
-import type { RouteDeclaration } from "../../routing/types";
-import { endpoint, getSessionId } from "../../routing/utils";
+import type { App } from "../../routing/app";
+import { getSessionId } from "../../routing/utils";
 import { userHostsParty } from "../party/services";
 import { Guest, User } from "../user/services";
 import { videos } from "../ytdlp/db";
@@ -15,10 +15,9 @@ import { queues, votes } from "./db";
 import { streamSessions } from "./state";
 import { getPartyIdFromHeader } from "./utils";
 
-export const routes: RouteDeclaration[] = [
-    [
-        endpoint("GET", "/queue"),
-        async (req) => {
+export const registerQueueRoutes = (app: App) => {
+    app.get("/queue", async (c) => {
+        const req = c.req.raw;
             let partyId = await Guest.getPartyId(req);
             if (!partyId) {
                 partyId = getPartyIdFromHeader(req);
@@ -68,12 +67,10 @@ export const routes: RouteDeclaration[] = [
                     ),
                 ),
             );
-        },
-    ],
+    });
 
-    [
-        endpoint("GET", "/queue/updates"),
-        async (req) => {
+    app.get("/queue/updates", async (c) => {
+        const req = c.req.raw;
             let partyId = await Guest.getPartyId(req);
             if (!partyId) {
                 partyId = getPartyIdFromHeader(req);
@@ -105,12 +102,10 @@ export const routes: RouteDeclaration[] = [
                     Connection: "keep-alive",
                 },
             });
-        },
-    ],
+    });
 
-    [
-        endpoint("PUT", "/queue/start"),
-        async (req) => {
+    app.put("/queue/start", async (c) => {
+        const req = c.req.raw;
             const partyId = getPartyIdFromHeader(req);
             if (!partyId) return new Response(undefined, { status: 400 });
             const userId = await User.getUserId(req);
@@ -139,12 +134,10 @@ export const routes: RouteDeclaration[] = [
                     `data: ${JSON.stringify(message)}\n\n`,
                 );
             return new Response();
-        },
-    ],
+    });
 
-    [
-        endpoint("PUT", "/queue/played"),
-        async (req) => {
+    app.put("/queue/played", async (c) => {
+        const req = c.req.raw;
             const partyId = getPartyIdFromHeader(req);
             if (!partyId) return new Response(undefined, { status: 400 });
             const userId = await User.getUserId(req);
@@ -172,12 +165,10 @@ export const routes: RouteDeclaration[] = [
                     `data: ${JSON.stringify(message)}\n\n`,
                 );
             return new Response();
-        },
-    ],
+    });
 
-    [
-        endpoint("DELETE", "/queue"),
-        async (req) => {
+    app.delete("/queue", async (c) => {
+        const req = c.req.raw;
             const sessionId = getSessionId(req);
             if (!sessionId) return new Response(undefined, { status: 400 });
             const partyId = getPartyIdFromHeader(req);
@@ -206,12 +197,10 @@ export const routes: RouteDeclaration[] = [
                     `data: ${JSON.stringify(message)}\n\n`,
                 );
             return new Response();
-        },
-    ],
+    });
 
-    [
-        endpoint("POST", "/queue"),
-        async (req) => {
+    app.post("/queue", async (c) => {
+        const req = c.req.raw;
             const sessionId = getSessionId(req);
             if (!sessionId) return new Response(undefined, { status: 400 });
             const partyId = await Guest.getPartyId(req);
@@ -241,12 +230,10 @@ export const routes: RouteDeclaration[] = [
                     `data: ${JSON.stringify(message)}\n\n`,
                 );
             return new Response();
-        },
-    ],
+    });
 
-    [
-        endpoint("GET", "/queue/vote"),
-        async (req) => {
+    app.get("/queue/vote", async (c) => {
+        const req = c.req.raw;
             const sessionId = getSessionId(req);
             if (!sessionId) return new Response(undefined, { status: 400 });
             const partyId = getPartyIdFromHeader(req);
@@ -277,12 +264,10 @@ export const routes: RouteDeclaration[] = [
                     positive: vote.positive,
                 }));
             return new Response(JSON.stringify(ownVotes));
-        },
-    ],
+    });
 
-    [
-        endpoint("POST", "/queue/vote"),
-        async (req) => {
+    app.post("/queue/vote", async (c) => {
+        const req = c.req.raw;
             const sessionId = getSessionId(req);
             if (!sessionId) return new Response(undefined, { status: 400 });
             const partyId = await Guest.getPartyId(req);
@@ -348,6 +333,5 @@ export const routes: RouteDeclaration[] = [
                     `data: ${JSON.stringify(accumulatedVotes)}\n\n`,
                 );
             return new Response();
-        },
-    ],
-];
+    });
+};
