@@ -12,10 +12,10 @@
 [x] enable host to vote, add and delete/skip
 [x] order queue from GET
 [x] fix playing same song twice (playing & nextInQueue)
-[ ] enable login with google & apple
+[ ] enable login with google
 [x] have public page login to jump streight to party
 [x] enable hosting exactly one party (add reset)
-[ ] prepare hosting
+[ ] prepare hosting (solve YT cookies!)
 [ ] add logging + stats
 [x] remove debug
 [ ] do (load) testing

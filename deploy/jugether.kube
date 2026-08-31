@@ -1,0 +1,9 @@
+[Unit]
+Description=Jugether
+
+[Kube]
+Yaml=jugether.yaml
+SetWorkingDirectory=yaml
+
+[Install]
+WantedBy=default.target

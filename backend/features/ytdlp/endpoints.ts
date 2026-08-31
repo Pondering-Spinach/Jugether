@@ -2,7 +2,7 @@ import { eq } from "drizzle-orm";
 import { db } from "../../db";
 import type { App } from "../../routing/app";
 import { Guest, User } from "../user/services";
-import { searchResultCount } from "./const";
+import { searchResultCount, ytdlpCookiesPath } from "./const";
 import { thumbnails, videos } from "./db";
 import { runYtdlp } from "./services";
 
@@ -91,8 +91,9 @@ export const registerYtdlpRoutes = (app: App) => {
                 "bestaudio/best",
                 "--hls-use-mpegts",
                 "--get-url",
-                "--cookies",
-                "/var/home/sebastian/.jails/tmp/Downloads/cookies.txt",
+                ...(ytdlpCookiesPath
+                    ? ["--cookies", ytdlpCookiesPath]
+                    : []),
                 res.url,
             ])
         ).trim();

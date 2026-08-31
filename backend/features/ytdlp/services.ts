@@ -25,7 +25,7 @@ export async function runYtdlp(args: string[]) {
     await acquireProcessSlot();
     try {
         return await new Promise<string>((resolve, reject) => {
-            const child = spawn(ytdlpExec, args, {
+            const child = spawn(ytdlpExec(), args, {
                 stdio: ["ignore", "pipe", "pipe"],
             });
             const stdout: Buffer[] = [];

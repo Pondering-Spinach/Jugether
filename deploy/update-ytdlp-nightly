@@ -1,0 +1,40 @@
+#!@bash@
+set -eu
+
+# The official `yt-dlp` asset is a Python zipapp. Unlike the glibc-linked
+# yt-dlp_linux asset, it works on both supported Nix image architectures.
+asset=yt-dlp
+
+: "${YTDLP_DIR:=/var/lib/jugether/yt-dlp}"
+: "${YTDLP_UPDATE_INTERVAL:=86400}"
+base_url="https://github.com/yt-dlp/yt-dlp-nightly-builds/releases/latest/download"
+
+update() {
+    mkdir -p "$YTDLP_DIR"
+    temporary=$(mktemp -d "$YTDLP_DIR/.update.XXXXXX")
+    trap 'rm -rf "$temporary"' RETURN
+
+    curl --fail --location --proto '=https' --tlsv1.2 \
+        "$base_url/SHA2-256SUMS" -o "$temporary/SHA2-256SUMS" || return 1
+    curl --fail --location --proto '=https' --tlsv1.2 \
+        "$base_url/$asset" -o "$temporary/$asset" || return 1
+
+    # Check precisely the downloaded asset, rather than accepting a partial
+    # checksum file. The move below is an atomic same-directory replacement.
+    expected=$(awk -v asset="$asset" '$2 == asset || $2 == "*" asset { print $1; exit }' \
+        "$temporary/SHA2-256SUMS")
+    [ -n "$expected" ] || { echo "no checksum for $asset" >&2; return 1; }
+    actual=$(sha256sum "$temporary/$asset" | awk '{ print $1 }')
+    [ "$actual" = "$expected" ] || { echo "checksum verification failed" >&2; return 1; }
+
+    chmod 0755 "$temporary/$asset"
+    mv -f "$temporary/$asset" "$YTDLP_DIR/yt-dlp"
+    echo "installed yt-dlp nightly: $($YTDLP_DIR/yt-dlp --version)"
+}
+
+while :; do
+    if ! update; then
+        echo "yt-dlp nightly update failed; retaining the previous binary" >&2
+    fi
+    sleep "$YTDLP_UPDATE_INTERVAL"
+done

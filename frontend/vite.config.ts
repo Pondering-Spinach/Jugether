@@ -60,7 +60,11 @@ export default defineConfig({
     build: {
         target: "esnext",
         // Keep the deployable frontend beside the Node server.
-        outDir: resolve(import.meta.dirname, "../backend/public"),
+        // Deployment builds set this to an output directory; development keeps
+        // the frontend colocated with the backend's static files.
+        outDir:
+            process.env.FRONTEND_OUT_DIR ??
+            resolve(import.meta.dirname, "../backend/public"),
         emptyOutDir: true,
         sourcemap: process.env.VITE_SOURCE_MAP === "true" ? true : false,
         rollupOptions: {
