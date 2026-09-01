@@ -15,11 +15,9 @@ export type Events =
     | {
           played: string;
       }
-    | (Video & {
-          queuedAt: number;
-      })
+    | QueueVideo
     | {
           videoId: string;
-          votes: number | undefined;
+          votes: number;
       }
     | { deleted: string };

@@ -1,5 +1,5 @@
-import { betterAuth } from "better-auth/minimal";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { betterAuth } from "better-auth/minimal";
 import { username } from "better-auth/plugins";
 import { db } from "./db";
 

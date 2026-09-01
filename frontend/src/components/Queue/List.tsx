@@ -1,4 +1,4 @@
-import type { JSXInternal } from "node_modules/preact/src/jsx";
+import type { JSX } from "preact/jsx-runtime";
 import {
     IoHeart,
     IoHeartDislike,
@@ -18,7 +18,7 @@ export function List({
     class: _class,
     enableDelete,
 }: {
-    class?: JSXInternal.Signalish<string | undefined>;
+    class?: JSX.HTMLAttributes<HTMLUListElement>["class"];
     enableDelete?: boolean;
 }) {
     const videos = queueStore(useShallow((store) => store.entries));

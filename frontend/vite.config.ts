@@ -7,7 +7,6 @@ const pageOutputPaths = {
     "src/pages/public/index.html": "index.html",
     "src/pages/host/index.html": "host.html",
     "src/pages/guest/index.html": "guest.html",
-    "src/pages/portal/index.html": "portal.html",
 } as const;
 
 // Vite intentionally preserves an HTML entry's source path in dist. Flatten only
@@ -55,10 +54,6 @@ export default defineConfig({
                     "src/pages/guest/index.html",
                 ),
                 host: resolve(import.meta.dirname, "src/pages/host/index.html"),
-                portal: resolve(
-                    import.meta.dirname,
-                    "src/pages/portal/index.html",
-                ),
                 public: resolve(
                     import.meta.dirname,
                     "src/pages/public/index.html",

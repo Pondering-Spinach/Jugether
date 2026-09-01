@@ -1,10 +1,21 @@
-import { integer, sqliteTable, text } from "drizzle-orm/sqlite-core";
-import { users } from "../user/db";
+import { sql } from "drizzle-orm";
+import {
+    integer,
+    sqliteTable,
+    text,
+    uniqueIndex,
+} from "drizzle-orm/sqlite-core";
 
-export const parties = sqliteTable("parties", {
-    id: text().primaryKey(),
-    active: integer({ mode: "boolean" }).default(true),
-    hostId: text().references(() => users.id),
-    begins: integer(),
-    ends: integer(),
-});
+// A server has one active party. Inactive rows retain old party history.
+export const parties = sqliteTable(
+    "parties",
+    {
+        id: text().primaryKey(),
+        active: integer({ mode: "boolean" }).notNull().default(true),
+    },
+    (table) => [
+        uniqueIndex("parties_one_active")
+            .on(table.active)
+            .where(sql`${table.active} = 1`),
+    ],
+);

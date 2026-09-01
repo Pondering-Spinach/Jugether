@@ -54,16 +54,11 @@ export function useQueue() {
         //TODO: handle messages properly
         events.addEventListener("message", (message) => {
             const parsedMessage = JSON.parse(message.data) as Events;
-            //playing
-            if (parsedMessage.started) start(parsedMessage.started);
-            //played
-            else if (parsedMessage.played) end(parsedMessage.played);
-            //vote
-            else if (parsedMessage.votes !== undefined)
+            if ("started" in parsedMessage) start(parsedMessage.started);
+            else if ("played" in parsedMessage) end(parsedMessage.played);
+            else if ("videoId" in parsedMessage)
                 updateVotes(parsedMessage.videoId, parsedMessage.votes);
-            //deleted
-            else if (parsedMessage.deleted) delete_(parsedMessage.deleted);
-            //added
+            else if ("deleted" in parsedMessage) delete_(parsedMessage.deleted);
             else add(parsedMessage);
         });
     }, []);

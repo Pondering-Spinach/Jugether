@@ -4,75 +4,75 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: jugether-ytdlp
+    name: jugether-ytdlp
 ---
 apiVersion: v1
 kind: Pod
 metadata:
-  name: jugether
-  annotations:
-    # Map the rootless host user's UID/GID into the pod. This lets the backend
-    # write the host-owned database directory without a privileged container.
-    io.podman.annotations.userns: keep-id
+    name: jugether
+    annotations:
+        # Map the rootless host user's UID/GID into the pod. This lets the backend
+        # write the host-owned database directory without a privileged container.
+        io.podman.annotations.userns: keep-id
 spec:
-  restartPolicy: Always
-  containers:
-    - name: backend
-      image: localhost/jugether:latest
-      ports:
-        - containerPort: 5222
-          hostPort: 5222
-          protocol: TCP
-      env:
-        - name: DATABASE_PATH
-          value: /var/lib/jugether/data/jugether.db
-        - name: YTDLP_EXEC
-          value: /var/lib/jugether/yt-dlp/yt-dlp
-        - name: YTDLP_COOKIES_PATH
-          value: /run/secrets/yt-dlp-cookies.txt
-      securityContext:
-        readOnlyRootFilesystem: true
-        allowPrivilegeEscalation: false
-        capabilities:
-          drop: ["ALL"]
-      volumeMounts:
+    restartPolicy: Always
+    containers:
+        - name: backend
+          image: localhost/jugether:latest
+          ports:
+              - containerPort: 5222
+                hostPort: 5222
+                protocol: TCP
+          env:
+              - name: DATABASE_PATH
+                value: /var/lib/jugether/data/jugether.db
+              - name: YTDLP_EXEC
+                value: /var/lib/jugether/yt-dlp/yt-dlp
+              - name: YTDLP_COOKIES_PATH
+                value: /run/secrets/yt-dlp-cookies.txt
+          securityContext:
+              readOnlyRootFilesystem: true
+              allowPrivilegeEscalation: false
+              capabilities:
+                  drop: ["ALL"]
+          volumeMounts:
+              - name: database
+                mountPath: /var/lib/jugether/data
+              - name: ytdlp
+                mountPath: /var/lib/jugether/yt-dlp
+                readOnly: true
+              - name: temporary
+                mountPath: /tmp
+              # Mount the directory (not a subPath) so atomic host-file rotation is
+              # visible to subsequently spawned yt-dlp processes without a restart.
+              - name: cookies
+                mountPath: /run/secrets
+                readOnly: true
+        - name: ytdlp-updater
+          image: localhost/jugether-ytdlp-updater:latest
+          securityContext:
+              readOnlyRootFilesystem: true
+              allowPrivilegeEscalation: false
+              capabilities:
+                  drop: ["ALL"]
+          volumeMounts:
+              - name: ytdlp
+                mountPath: /var/lib/jugether/yt-dlp
+              - name: temporary
+                mountPath: /tmp
+    volumes:
         - name: database
-          mountPath: /var/lib/jugether/data
+          hostPath:
+              # It must be local storage, owned by the rootless deployment user.
+              path: /var/lib/jugether
+              type: Directory
         - name: ytdlp
-          mountPath: /var/lib/jugether/yt-dlp
-          readOnly: true
-        - name: temporary
-          mountPath: /tmp
-        # Mount the directory (not a subPath) so atomic host-file rotation is
-        # visible to subsequently spawned yt-dlp processes without a restart.
+          persistentVolumeClaim:
+              claimName: jugether-ytdlp
         - name: cookies
-          mountPath: /run/secrets
-          readOnly: true
-    - name: ytdlp-updater
-      image: localhost/jugether-ytdlp-updater:latest
-      securityContext:
-        readOnlyRootFilesystem: true
-        allowPrivilegeEscalation: false
-        capabilities:
-          drop: ["ALL"]
-      volumeMounts:
-        - name: ytdlp
-          mountPath: /var/lib/jugether/yt-dlp
+          hostPath:
+              # Runtime-secret directory: provisioned on the host, never in Git.
+              path: /var/lib/jugether/secrets
+              type: Directory
         - name: temporary
-          mountPath: /tmp
-  volumes:
-    - name: database
-      hostPath:
-        # It must be local storage, owned by the rootless deployment user.
-        path: /var/lib/jugether
-        type: Directory
-    - name: ytdlp
-      persistentVolumeClaim:
-        claimName: jugether-ytdlp
-    - name: cookies
-      hostPath:
-        # Runtime-secret directory: provisioned on the host, never in Git.
-        path: /var/lib/jugether/secrets
-        type: Directory
-    - name: temporary
-      emptyDir: {}
+          emptyDir: {}

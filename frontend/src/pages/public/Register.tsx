@@ -42,7 +42,8 @@ export function Register() {
                 name="password"
                 type="password"
                 required
-                placeholder="password"
+                minLength={8}
+                placeholder="password (8+ characters)"
             />
             <button class="btn btn-primary">Register</button>
         </form>

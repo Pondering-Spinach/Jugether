@@ -23,7 +23,7 @@
             version = "0.1.0";
             src = ./frontend;
             npmDepsFetcherVersion = 2;
-            npmDepsHash = "sha256-LLW4lRtOPRLloIlnWI/HkPgFgMbMimQhOkHyYQO8Ie8=";
+            npmDepsHash = "sha256-Ftgw6EeTXEeh8liD9A1zlvnFnST3iR31v2Kkj6wkcAo=";
             npmFlags = [ "--legacy-peer-deps" ];
             buildPhase = ''
               runHook preBuild
@@ -44,7 +44,7 @@
               ln -s ${./communication} ../communication
             '';
             npmDepsFetcherVersion = 2;
-            npmDepsHash = "sha256-g+pb+KAbV+JA4n6jPNZTKq2LosghPjZr4LRIaq+m8S4=";
+            npmDepsHash = "sha256-sL5u9YNUEoIGWNbGkdhxmjOUyDvZhnqIY7f0KBT4Ltg=";
             npmFlags = [ "--legacy-peer-deps" ];
             nativeBuildInputs = [ pkgs.makeWrapper ];
             buildPhase = ''

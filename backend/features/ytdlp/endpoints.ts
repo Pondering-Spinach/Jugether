@@ -1,6 +1,7 @@
 import { eq } from "drizzle-orm";
 import { db } from "../../db";
 import type { App } from "../../routing/app";
+import { getAccessiblePartyId } from "../party/access";
 import { Guest, User } from "../user/services";
 import { searchResultCount, ytdlpCookiesPath } from "./const";
 import { thumbnails, videos } from "./db";
@@ -75,9 +76,8 @@ export const registerYtdlpRoutes = (app: App) => {
 
     app.get("/audioUrl", async (c) => {
         const req = c.req.raw;
-        if (!(await User.getUserId(req)))
+        if (!(await User.getUserId(req)) || !(await getAccessiblePartyId(req)))
             return new Response(undefined, { status: 401 });
-        //TODO: validate party
         const videoId = c.req.query("id");
         if (!videoId) return new Response(undefined, { status: 400 });
         const res = await db.query.videos.findFirst({
@@ -91,9 +91,7 @@ export const registerYtdlpRoutes = (app: App) => {
                 "bestaudio/best",
                 "--hls-use-mpegts",
                 "--get-url",
-                ...(ytdlpCookiesPath
-                    ? ["--cookies", ytdlpCookiesPath]
-                    : []),
+                ...(ytdlpCookiesPath ? ["--cookies", ytdlpCookiesPath] : []),
                 res.url,
             ])
         ).trim();

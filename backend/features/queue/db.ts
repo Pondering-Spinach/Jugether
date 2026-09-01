@@ -6,7 +6,6 @@ import {
     text,
 } from "drizzle-orm/sqlite-core";
 import { parties } from "../party/db";
-import { guestSessions } from "../user/db";
 import { videos } from "../ytdlp/db";
 
 export const queues = sqliteTable("queues", {
@@ -18,7 +17,6 @@ export const queues = sqliteTable("queues", {
         .notNull()
         .references(() => videos.id),
     queuedAt: integer().notNull(),
-    queuedBy: text().references(() => guestSessions.id),
     playedAt: integer(),
     skippedAt: integer(),
     startedAt: integer(),

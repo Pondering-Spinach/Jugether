@@ -1,5 +1,5 @@
-import type { JSXInternal } from "node_modules/preact/src/jsx";
 import { useEffect, useRef, useState } from "preact/hooks";
+import type { JSX } from "preact/jsx-runtime";
 import {
     IoPause,
     IoPauseOutline,
@@ -14,7 +14,7 @@ export function Player({
     class: _class,
     enableControls,
 }: {
-    class?: JSXInternal.Signalish<string | undefined>;
+    class?: JSX.HTMLAttributes<HTMLDivElement>["class"];
     enableControls?: boolean;
 }) {
     const [paused, setPaused] = useState<boolean>(true);
@@ -57,7 +57,7 @@ export function Player({
     }, [playing?.id]);
 
     useEffect(() => {
-        if (audioSources[firstInQueue]) return;
+        if (!firstInQueue || audioSources[firstInQueue]) return;
 
         //TODO: maybe debounce
         enableControls &&
@@ -96,8 +96,9 @@ export function Player({
                 <audio
                     ref={playerRef}
                     controls={false}
-                    src={audioSources[playing?.id]}
+                    src={playing ? audioSources[playing.id] : undefined}
                     onPlay={() => {
+                        if (!playing) return;
                         fetch("/queue/start", {
                             method: "PUT",
                             body: playing.id,

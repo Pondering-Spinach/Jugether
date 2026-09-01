@@ -40,11 +40,13 @@ CREATE TABLE `user` (
 	`image` text,
 	`created_at` integer DEFAULT (cast(unixepoch('subsecond') * 1000 as integer)) NOT NULL,
 	`updated_at` integer DEFAULT (cast(unixepoch('subsecond') * 1000 as integer)) NOT NULL,
-	`username` text
+	`username` text,
+	`singleton` integer DEFAULT 1 NOT NULL
 );
 --> statement-breakpoint
 CREATE UNIQUE INDEX `user_email_unique` ON `user` (`email`);--> statement-breakpoint
 CREATE UNIQUE INDEX `user_username_unique` ON `user` (`username`);--> statement-breakpoint
+CREATE UNIQUE INDEX `user_singleton_unique` ON `user` (`singleton`);--> statement-breakpoint
 CREATE TABLE `verification` (
 	`id` text PRIMARY KEY NOT NULL,
 	`identifier` text NOT NULL,
@@ -57,25 +59,20 @@ CREATE TABLE `verification` (
 CREATE INDEX `verification_identifier_idx` ON `verification` (`identifier`);--> statement-breakpoint
 CREATE TABLE `parties` (
 	`id` text PRIMARY KEY NOT NULL,
-	`active` integer DEFAULT true,
-	`hostId` text,
-	`begins` integer,
-	`ends` integer,
-	FOREIGN KEY (`hostId`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE no action
+	`active` integer DEFAULT true NOT NULL
 );
 --> statement-breakpoint
+CREATE UNIQUE INDEX `parties_one_active` ON `parties` (`active`) WHERE "parties"."active" = 1;--> statement-breakpoint
 CREATE TABLE `queues` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`partyId` text NOT NULL,
 	`videoId` text NOT NULL,
 	`queuedAt` integer NOT NULL,
-	`queuedBy` text,
 	`playedAt` integer,
 	`skippedAt` integer,
 	`startedAt` integer,
 	FOREIGN KEY (`partyId`) REFERENCES `parties`(`id`) ON UPDATE no action ON DELETE no action,
-	FOREIGN KEY (`videoId`) REFERENCES `videos`(`id`) ON UPDATE no action ON DELETE no action,
-	FOREIGN KEY (`queuedBy`) REFERENCES `guestSessions`(`id`) ON UPDATE no action ON DELETE no action
+	FOREIGN KEY (`videoId`) REFERENCES `videos`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
 CREATE TABLE `votes` (

@@ -12,43 +12,29 @@
 [x] enable host to vote, add and delete/skip
 [x] order queue from GET
 [x] fix playing same song twice (playing & nextInQueue)
-[ ] enable login with google
+[x] enable only one host
 [x] have public page login to jump streight to party
 [x] enable hosting exactly one party (add reset)
-[ ] prepare hosting (solve YT cookies!)
-[ ] add logging + stats
 [x] remove debug
-[ ] do (load) testing
+[x] trim everything down substancially
+[ ] add logging for technical errors
 
 ---
 
-[ ] integrate revenuecat
-[ ] validate party time
-[ ] implement party tokens (for creating and prolonging parties)
-[ ] finish internal portal
-[ ] cook up public page
+[ ] solve YT cookies
+[x] pivot to artist + song search
 [ ] rework communication models
-[ ] add call resilience (handle errors)
-[ ] make channel browsing more obvious
+[ ] add call resilience (handle errors, e.g. useQueue after party closes)
 [ ] show playing progress (accounting for pause)
-[ ] polish everything
-[ ] add playlists to init party
-[ ] migrate to postgres?
-[ ] survey after party ends
-
-- what would you improve
-- how much would you pay
-- would ads bother you
 
 # design ideas:
 
 [ ] have video search input loose focus on scroll
 [ ] enable swipe to get back from search to list
-[ ] have QR code available for all
-[ ] have vote buttons be emojis
-[ ] fill vote button background when active (green, red)
+[x] have QR code available for all
+[x] have vote buttons be emojis
+[x] fill vote button background when active (green, red)
 [x] show score between vote buttons
-[ ] have all buttons be round
+[x] have all buttons be round
 [ ] add animation to track play list movements (incl next track)
 [x] make queue into list for lots of entries
-[ ] have queue history visible

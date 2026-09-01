@@ -1,27 +1,26 @@
-import { useEffect } from "preact/hooks";
+import { useEffect, useRef } from "preact/hooks";
 import type { JSX } from "preact/jsx-runtime";
 import QrCodeWithLogo from "qrcode-with-logos";
-import type { BaseOptions } from "qrcode-with-logos/types/src/core/types";
 
 function QRCode({
     class: classNames,
-    options,
+    content,
 }: {
     class: JSX.HTMLAttributes<HTMLImageElement>["class"];
-    options: Omit<BaseOptions, "image">;
+    content: string;
 }) {
+    const image = useRef<HTMLImageElement>(null);
+
     useEffect(() => {
-        new QrCodeWithLogo({
-            ...options,
-            image: document.getElementById("qrcode"),
-        });
-    }, []);
+        if (image.current)
+            new QrCodeWithLogo({ content, image: image.current });
+    }, [content]);
 
     return (
         <img
             class={classNames}
             style={{ "image-rendering": "crisp-edges" }}
-            id="qrcode"
+            ref={image}
         />
     );
 }

@@ -1,11 +1,11 @@
-import { and, eq } from "drizzle-orm";
+import { eq } from "drizzle-orm";
 import { db } from "../../db";
 import { parties } from "./db";
 
-export async function userHostsParty(userId: string, partyId: string) {
-    const res = await db.query.parties.findFirst({
-        where: and(eq(parties.active, true), eq(parties.id, partyId)),
-        columns: { hostId: true },
+export async function getActivePartyId() {
+    const party = await db.query.parties.findFirst({
+        where: eq(parties.active, true),
+        columns: { id: true },
     });
-    return res?.hostId === userId;
+    return party?.id ?? null;
 }
