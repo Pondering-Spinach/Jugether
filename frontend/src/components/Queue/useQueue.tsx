@@ -1,5 +1,6 @@
 import type { Events, OwnVote, QueueVideo } from "communication/queue";
 import { useEffect } from "preact/hooks";
+import { appUrl } from "../../app-url";
 import { queueStore } from "./store";
 
 const voteDirectionMap = { undefined: "0", up: "1", down: "-1" };
@@ -9,7 +10,7 @@ export function updateVote(videoId: string, direction: "up" | "down") {
         queueStore.getState().vote(videoId, direction);
         const voteDirection = queueStore.getState().votes[videoId];
         const voteAPIDirection = voteDirectionMap[voteDirection];
-        fetch("/queue/vote", {
+        fetch(appUrl("/queue/vote"), {
             method: "post",
             body: JSON.stringify({ videoId, vote: voteAPIDirection }),
         });
@@ -24,7 +25,7 @@ export function useQueue() {
     const updateVotes = queueStore((store) => store.updateVotes);
 
     useEffect(() => {
-        fetch("/queue")
+        fetch(appUrl("/queue"))
             .then((resp) => resp.json())
             .then((entries: QueueVideo[]) => {
                 if (entries[0]?.startedAt) {
@@ -35,7 +36,7 @@ export function useQueue() {
                 } else queueStore.setState({ entries });
             });
 
-        fetch("/queue/vote")
+        fetch(appUrl("/queue/vote"))
             .then((resp) => resp.json())
             .then((votes: OwnVote[]) =>
                 queueStore.setState({
@@ -49,7 +50,7 @@ export function useQueue() {
             );
 
         //TODO: reconnect
-        const events = new EventSource("/queue/updates");
+        const events = new EventSource(appUrl("/queue/updates"));
 
         //TODO: handle messages properly
         events.addEventListener("message", (message) => {

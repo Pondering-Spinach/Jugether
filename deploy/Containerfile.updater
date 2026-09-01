@@ -1,0 +1,8 @@
+FROM docker.io/library/python:3.12-slim-bookworm
+RUN apt-get update && apt-get install -y --no-install-recommends bash curl gawk ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+COPY deploy/update-ytdlp-nightly /usr/local/bin/update-ytdlp-nightly
+RUN chmod +x /usr/local/bin/update-ytdlp-nightly
+# The shared volume is writable by the rootless pod's mapped user.
+USER 1000:1000
+ENTRYPOINT ["/usr/local/bin/update-ytdlp-nightly"]

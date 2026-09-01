@@ -1,0 +1,46 @@
+#!/bin/sh
+set -eu
+
+# Create the Better Auth secret exactly once.  Replacing this file invalidates
+# signed sessions, so a missing secret on a later deployment must be investigated
+# rather than silently replaced.
+secret_dir=${JUGETHER_SECRETS_DIR:-/var/lib/jugether/secrets}
+secret_file=$secret_dir/better-auth-secret
+
+umask 077
+mkdir -p "$secret_dir"
+chmod 0700 "$secret_dir"
+
+valid_secret() {
+    [ -f "$secret_file" ] && [ ! -L "$secret_file" ] &&
+        [ "$(tr -d '\r\n' < "$secret_file" | wc -c)" -ge 32 ]
+}
+
+if [ -e "$secret_file" ] || [ -L "$secret_file" ]; then
+    valid_secret || {
+        echo "invalid Better Auth secret: $secret_file" >&2
+        exit 1
+    }
+    exit 0
+fi
+
+command -v openssl >/dev/null || {
+    echo "openssl is required to generate the Better Auth secret" >&2
+    exit 1
+}
+
+temporary=$(mktemp "$secret_dir/.better-auth-secret.XXXXXX")
+trap 'rm -f "$temporary"' EXIT HUP INT TERM
+openssl rand -base64 48 > "$temporary"
+chmod 0600 "$temporary"
+
+# link(2) fails if another deployment process won the race, without replacing
+# its secret.  In that case validate and use the existing file.
+if ln "$temporary" "$secret_file" 2>/dev/null; then
+    rm -f "$temporary"
+elif valid_secret; then
+    :
+else
+    echo "could not create Better Auth secret: $secret_file" >&2
+    exit 1
+fi

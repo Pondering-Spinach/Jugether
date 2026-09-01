@@ -1,18 +1,25 @@
+import { existsSync, readFileSync } from "node:fs";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { betterAuth } from "better-auth/minimal";
 import { username } from "better-auth/plugins";
 import { db } from "./db";
 
-const isProduction = process.env["NODE_ENV"] === "production";
-const secret = process.env["BETTER_AUTH_SECRET"];
+const secretFile = process.env["BETTER_AUTH_SECRET_FILE"];
+const secret =
+    secretFile && existsSync(secretFile)
+        ? readFileSync(secretFile, "utf8").trim()
+        : undefined;
 
-if (isProduction && !secret)
-    throw new Error("BETTER_AUTH_SECRET must be set in production");
+if (process.env["NODE_ENV"] === "production" && !secret)
+    console.warn(
+        "Better Auth secret file is unavailable; using the built-in fallback secret",
+    );
 
 export const auth = betterAuth({
     database: drizzleAdapter(db, { provider: "sqlite" }),
-    // A fixed development secret keeps local sessions valid across restarts.
-    secret: secret ?? "development-only-secret-change-before-production",
+    // The persistent mounted file takes precedence; the fallback keeps local
+    // development usable if the deployment bootstrap step was skipped.
+    secret: secret || "development-only-secret-change-before-production",
     ...(process.env["BETTER_AUTH_URL"]
         ? { baseURL: process.env["BETTER_AUTH_URL"] }
         : {}),

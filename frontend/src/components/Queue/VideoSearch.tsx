@@ -2,6 +2,7 @@ import type { Video } from "communication/common";
 import { useEffect, useRef, useState } from "preact/hooks";
 import { IoAddOutline, IoHeart, IoHeartOutline } from "react-icons/io5";
 import { useShallow } from "zustand/shallow";
+import { appUrl } from "../../app-url";
 import { queueStore } from "./store";
 import { thumbnailUrl } from "./thumbnail";
 import { TrackName } from "./TrackName";
@@ -23,13 +24,13 @@ function VideoSearch({ focusInput }: { focusInput: boolean }) {
         if (!query) return;
         setSearchResults(null);
         const response = await fetch(
-            "/search?query=" + encodeURIComponent(query),
+            appUrl("/search?query=" + encodeURIComponent(query)),
         );
         setSearchResults(await response.json());
     }
 
     const queueVideo = (id: string) => () =>
-        fetch("/queue", { method: "POST", body: id });
+        fetch(appUrl("/queue"), { method: "POST", body: id });
 
     return (
         <div class="flex flex-col gap-8">

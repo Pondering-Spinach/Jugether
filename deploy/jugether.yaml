@@ -1,11 +1,6 @@
 # Podman kube play supports this Podman-focused subset of Kubernetes YAML.
-# Run it rootlessly as any unprivileged host user. The database hostPath is
-# deliberately direct host storage to make SQLite backups simple.
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-    name: jugether-ytdlp
----
+# Run it rootlessly as the deployment user. Database and yt-dlp state live
+# in host directories under /var/lib/jugether.
 apiVersion: v1
 kind: Pod
 metadata:
@@ -18,12 +13,25 @@ spec:
     restartPolicy: Always
     containers:
         - name: backend
+          # The release installs this image with `podman load`; never contact a
+          # registry for the mutable `latest` tag during service startup.
           image: localhost/jugether:latest
+          imagePullPolicy: Never
           ports:
               - containerPort: 5222
+                # The reverse proxy is the only public listener; do not expose the app directly.
+                hostIP: 0.0.0.0
                 hostPort: 5222
                 protocol: TCP
           env:
+              # Rendered by the deployment build; it must match Vite's build setting.
+              - name: APP_BASE_PATH
+                value: "@APP_BASE_PATH@"
+              # The externally visible endpoint, not the pod's loopback URL.
+              - name: BETTER_AUTH_URL
+                value: "@BETTER_AUTH_URL@"
+              - name: BETTER_AUTH_SECRET_FILE
+                value: /run/secrets/better-auth-secret
               - name: DATABASE_PATH
                 value: /var/lib/jugether/data/jugether.db
               - name: YTDLP_EXEC
@@ -50,6 +58,10 @@ spec:
                 readOnly: true
         - name: ytdlp-updater
           image: localhost/jugether-ytdlp-updater:latest
+          imagePullPolicy: Never
+          env:
+              - name: YTDLP_UPDATE_INTERVAL
+                value: "1800"
           securityContext:
               readOnlyRootFilesystem: true
               allowPrivilegeEscalation: false
@@ -67,11 +79,14 @@ spec:
               path: /var/lib/jugether
               type: Directory
         - name: ytdlp
-          persistentVolumeClaim:
-              claimName: jugether-ytdlp
+          hostPath:
+              # Keep the last verified nightly across pod recreation and outages.
+              path: /var/lib/jugether/yt-dlp
+              type: Directory
         - name: cookies
           hostPath:
               # Runtime-secret directory: provisioned on the host, never in Git.
+              # It contains the Better Auth secret and optional yt-dlp cookies.
               path: /var/lib/jugether/secrets
               type: Directory
         - name: temporary

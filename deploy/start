@@ -1,0 +1,5 @@
+#!/bin/sh
+set -eu
+cd /app/backend
+node node_modules/tsx/dist/cli.mjs db/migrate.ts
+exec node node_modules/tsx/dist/cli.mjs index.ts

@@ -8,6 +8,7 @@ import {
     IoPlaySkipForwardOutline,
 } from "react-icons/io5";
 import { useShallow } from "zustand/shallow";
+import { appUrl } from "../../app-url";
 import { queueStore } from "./store";
 import { thumbnailUrl } from "./thumbnail";
 import { TrackName } from "./TrackName";
@@ -48,7 +49,7 @@ export function Player({
 
         //TODO: maybe debounce
         enableControls &&
-            fetch("/audioUrl?id=" + encodeURIComponent(playing.id))
+            fetch(appUrl("/audioUrl?id=" + encodeURIComponent(playing.id)))
                 .then((resp) => resp.text())
                 .then((audioLink) =>
                     setAudioSources((sources) => ({
@@ -63,7 +64,7 @@ export function Player({
 
         //TODO: maybe debounce
         enableControls &&
-            fetch("/audioUrl?id=" + encodeURIComponent(firstInQueue))
+            fetch(appUrl("/audioUrl?id=" + encodeURIComponent(firstInQueue)))
                 .then((resp) => resp.text())
                 .then((audioLink) =>
                     setAudioSources((sources) => ({
@@ -75,7 +76,7 @@ export function Player({
 
     function nextSong() {
         if (playing) {
-            fetch("/queue/played", {
+            fetch(appUrl("/queue/played"), {
                 method: "PUT",
                 body: playing.id,
             });
@@ -83,7 +84,7 @@ export function Player({
         }
 
         if (firstInQueue) {
-            fetch("/queue/start", {
+            fetch(appUrl("/queue/start"), {
                 method: "PUT",
                 body: firstInQueue,
             });
@@ -101,7 +102,7 @@ export function Player({
                     src={playing ? audioSources[playing.id] : undefined}
                     onPlay={() => {
                         if (!playing) return;
-                        fetch("/queue/start", {
+                        fetch(appUrl("/queue/start"), {
                             method: "PUT",
                             body: playing.id,
                         });

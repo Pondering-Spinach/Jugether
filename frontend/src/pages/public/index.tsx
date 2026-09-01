@@ -1,6 +1,7 @@
 /* @refresh reload */
 import { render } from "preact";
 import { useEffect, useState } from "preact/hooks";
+import { appUrl } from "../../app-url";
 import { Login } from "./Login";
 import { Register } from "./Register";
 
@@ -19,7 +20,7 @@ function App() {
 
     useEffect(() => {
         let cancelled = false;
-        void fetch("/api/registration")
+        void fetch(appUrl("/api/registration"))
             .then(async (res) => {
                 if (!res.ok) throw new Error("Unable to check registration");
                 return (await res.json()) as { registrationOpen: boolean };

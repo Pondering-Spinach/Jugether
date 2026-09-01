@@ -1,12 +1,11 @@
-#!@bash@
+#!/bin/bash
 set -eu
 
-# The official `yt-dlp` asset is a Python zipapp. Unlike the glibc-linked
-# yt-dlp_linux asset, it works on both supported Nix image architectures.
+# The official `yt-dlp` asset is a portable Python zipapp.
 asset=yt-dlp
 
 : "${YTDLP_DIR:=/var/lib/jugether/yt-dlp}"
-: "${YTDLP_UPDATE_INTERVAL:=86400}"
+: "${YTDLP_UPDATE_INTERVAL:=1800}"
 base_url="https://github.com/yt-dlp/yt-dlp-nightly-builds/releases/latest/download"
 
 update() {

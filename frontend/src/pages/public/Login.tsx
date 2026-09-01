@@ -1,3 +1,5 @@
+import { appUrl } from "../../app-url";
+
 export function Login() {
     async function onSubmit(
         e: SubmitEvent & {
@@ -7,7 +9,7 @@ export function Login() {
     ) {
         e.preventDefault();
         const form = new FormData(e.target);
-        const res = await fetch("/api/auth/sign-in/username", {
+        const res = await fetch(appUrl("/api/auth/sign-in/username"), {
             method: "POST",
             headers: { "content-type": "application/json" },
             body: JSON.stringify({
@@ -15,7 +17,7 @@ export function Login() {
                 password: form.get("password"),
             }),
         });
-        if (res.ok) window.location.href = "/";
+        if (res.ok) window.location.href = appUrl();
         else e.target.reset();
     }
 

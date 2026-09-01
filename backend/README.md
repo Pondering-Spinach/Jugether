@@ -38,10 +38,13 @@ plugin for local username/password accounts. It owns the `user`, `account`,
 `session`, and `verification` tables; the separate `guestSessions` table is
 only for anonymous party participation.
 
-Set `BETTER_AUTH_SECRET` to a random, persistent secret in production and set
-`BETTER_AUTH_URL` to the public application origin (for example,
-`https://jugether.example`). The development fallback secret is intentionally
-not suitable for deployment. Local registration creates an internal
+Set `BETTER_AUTH_SECRET_FILE` to a read-only file containing a random,
+persistent production secret, and set `BETTER_AUTH_URL` to the public
+authentication endpoint (for example,
+`https://jugether.example/jugether/api/auth` when deployed below
+`/jugether`). If the file is unavailable, the backend logs a warning and uses
+its fixed fallback secret so it remains available; deploy the file to preserve
+production session security. Local registration creates an internal
 `@local.test` email because Better Auth's username plugin is layered on its
 email/password authenticator; users sign in only with their username.
 

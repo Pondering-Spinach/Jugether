@@ -6,6 +6,7 @@ import {
     IoQrCode,
     IoTrashBinOutline,
 } from "react-icons/io5";
+import { appUrl } from "../app-url";
 import QRCode from "./QRCode/QRCode";
 import QRModal from "./QRCode/QRModal";
 import { List } from "./Queue/List";
@@ -17,7 +18,7 @@ export function PartyPage({ host = false }: { host?: boolean }) {
     const [overlaySearch, setOverlaySearch] = useState(false);
     const qrDialogRef = useRef<HTMLDialogElement>(null);
     const deletionDialogRef = useRef<HTMLDialogElement>(null);
-    const invitation = `${location.origin}/party?id=${new URL(location.href).searchParams.get("id")}`;
+    const invitation = `${location.origin}${appUrl("/party?id=" + new URL(location.href).searchParams.get("id"))}`;
 
     const closeQRModal = useCallback(() => qrDialogRef.current?.close(), []);
     const closeDeletionModal = useCallback(
@@ -128,10 +129,12 @@ export function PartyPage({ host = false }: { host?: boolean }) {
                     <button
                         class="btn btn-error"
                         onClick={() =>
-                            fetch("/party", { method: "DELETE" })
+                            fetch(appUrl("/party"), { method: "DELETE" })
                                 .then((response) => response.text())
                                 .then((partyId) => {
-                                    location.href = `host?id=${partyId}`;
+                                    location.href = appUrl(
+                                        `/host?id=${partyId}`,
+                                    );
                                 })
                         }
                     >

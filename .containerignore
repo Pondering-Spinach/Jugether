@@ -1,0 +1,10 @@
+.git
+.gitignore
+.dist.new
+dist
+**/node_modules
+backend/public
+frontend/dist
+**/test.db*
+**/.env*
+**/npm-debug.log*

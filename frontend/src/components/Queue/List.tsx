@@ -7,13 +7,14 @@ import {
     IoTrashBinOutline,
 } from "react-icons/io5";
 import { useShallow } from "zustand/react/shallow";
+import { appUrl } from "../../app-url";
 import { queueStore } from "./store";
 import { thumbnailUrl } from "./thumbnail";
 import { TrackName } from "./TrackName";
 import { updateVote } from "./useQueue";
 
 function deleteVideo(videoId: string) {
-    return fetch("/queue", { method: "DELETE", body: videoId });
+    return fetch(appUrl("/queue"), { method: "DELETE", body: videoId });
 }
 
 export function List({

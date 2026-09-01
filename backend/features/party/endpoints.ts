@@ -2,6 +2,7 @@ import { serveStatic } from "@hono/node-server/serve-static";
 import { eq } from "drizzle-orm";
 import { db } from "../../db";
 import type { App } from "../../routing/app";
+import { appPath } from "../../routing/base-path";
 import { frontendDist } from "../../routing/static";
 import { getSessionId } from "../../routing/utils";
 import { streamControllers } from "../queue/state";
@@ -20,11 +21,11 @@ export const registerPartyRoutes = (app: App) => {
         const partyId = await getActivePartyId();
         if (!(await requireHost(c.req.raw)))
             return requestedPartyId
-                ? c.redirect("/party?id=" + requestedPartyId)
-                : c.redirect("/");
-        if (!partyId) return c.redirect("/");
+                ? c.redirect(appPath("/party?id=" + requestedPartyId))
+                : c.redirect(appPath("/"));
+        if (!partyId) return c.redirect(appPath("/"));
         if (requestedPartyId !== partyId)
-            return c.redirect("/host?id=" + partyId);
+            return c.redirect(appPath("/host?id=" + partyId));
         return hostPage(c, async () => undefined);
     });
 
@@ -58,7 +59,7 @@ export const registerPartyRoutes = (app: App) => {
         if (!existingSessionId)
             c.header(
                 "Set-Cookie",
-                `sessionId=${sessionId}; HttpOnly; SameSite=Strict; Path=/`,
+                `sessionId=${sessionId}; HttpOnly; SameSite=Strict; Path=${appPath() || "/"}`,
             );
         return guestPage(c, async () => undefined);
     });

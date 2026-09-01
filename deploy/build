@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+root=$(cd -- "$(dirname -- "$0")/.." && pwd)
+cd "$root"
+
+: "${PUBLIC_ORIGIN:?PUBLIC_ORIGIN is required (e.g. https://example.com)}"
+APP_BASE_PATH=${APP_BASE_PATH:-}
+[[ $PUBLIC_ORIGIN =~ ^https://[A-Za-z0-9.-]+(:[0-9]+)?$ ]] || {
+    echo 'PUBLIC_ORIGIN must be an HTTPS origin without a path' >&2; exit 1;
+}
+[[ -z $APP_BASE_PATH || $APP_BASE_PATH =~ ^(/[A-Za-z0-9._~-]+)+$ ]] || {
+    echo 'APP_BASE_PATH must be empty or an absolute path without a trailing slash' >&2; exit 1;
+}
+command -v podman >/dev/null || { echo 'podman is required' >&2; exit 1; }
+
+# Render only after both builds succeed; keep the previous release on failure.
+rm -rf .dist.new
+trap 'rm -rf .dist.new' EXIT
+podman build -f deploy/Containerfile --build-arg "APP_BASE_PATH=$APP_BASE_PATH" \
+    -t localhost/jugether:latest .
+podman build -f deploy/Containerfile.updater \
+    -t localhost/jugether-ytdlp-updater:latest .
+mkdir .dist.new
+podman save localhost/jugether:latest | gzip -1 > .dist.new/jugether.tar.gz
+podman save localhost/jugether-ytdlp-updater:latest | gzip -1 > .dist.new/jugether-ytdlp-updater.tar.gz
+better_auth_url="$PUBLIC_ORIGIN$APP_BASE_PATH/api/auth"
+sed -e "s|@APP_BASE_PATH@|$APP_BASE_PATH|g" \
+    -e "s|@BETTER_AUTH_URL@|$better_auth_url|g" \
+    deploy/jugether.yaml > .dist.new/jugether.yaml
+cp deploy/jugether.kube deploy/jugether-init .dist.new/
+cat > .dist.new/BUILD-INFO <<EOF
+APP_BASE_PATH=$APP_BASE_PATH
+PUBLIC_ORIGIN=$PUBLIC_ORIGIN
+BETTER_AUTH_URL=$better_auth_url
+EOF
+rm -rf dist
+mv .dist.new dist

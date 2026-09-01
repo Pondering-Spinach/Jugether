@@ -1,3 +1,6 @@
+import { copyFile, mkdtemp, rm } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { eq, inArray } from "drizzle-orm";
 import { db } from "../../db";
 import type { App } from "../../routing/app";
@@ -103,17 +106,33 @@ export const registerYtdlpRoutes = (app: App) => {
             columns: { id: true },
         });
         if (!video) return new Response(undefined, { status: 400 });
-        const videoUrl = (
-            await runYtdlp([
-                "-f",
-                "bestaudio/best",
-                "--get-url",
-                ...(ytdlpCookiesPath ? ["--cookies", ytdlpCookiesPath] : []),
-                // A canonical URL avoids the Music client's authenticated
-                // po_token requirement for a cached Music search result.
-                `https://www.youtube.com/watch?v=${encodeURIComponent(videoId)}`,
-            ])
-        ).trim();
-        return new Response(videoUrl);
+        // yt-dlp writes its cookie jar on exit. Runtime cookies are mounted
+        // read-only, so give each invocation a disposable writable copy.
+        let cookiesDirectory: string | undefined;
+        try {
+            let cookiesPath: string | undefined;
+            if (ytdlpCookiesPath) {
+                cookiesDirectory = await mkdtemp(
+                    join(tmpdir(), "jugether-ytdlp-cookies-"),
+                );
+                cookiesPath = join(cookiesDirectory, "cookies.txt");
+                await copyFile(ytdlpCookiesPath, cookiesPath);
+            }
+            const videoUrl = (
+                await runYtdlp([
+                    "-f",
+                    "bestaudio/best",
+                    "--get-url",
+                    ...(cookiesPath ? ["--cookies", cookiesPath] : []),
+                    // A canonical URL avoids the Music client's authenticated
+                    // po_token requirement for a cached Music search result.
+                    `https://www.youtube.com/watch?v=${encodeURIComponent(videoId)}`,
+                ])
+            ).trim();
+            return new Response(videoUrl);
+        } finally {
+            if (cookiesDirectory)
+                await rm(cookiesDirectory, { recursive: true, force: true });
+        }
     });
 };

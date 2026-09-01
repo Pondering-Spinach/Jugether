@@ -33,6 +33,7 @@ const flatPageOutputs = (): Plugin => ({
 
 // https://vite.dev/config/
 export default defineConfig({
+    base: process.env.APP_BASE_PATH || "/",
     plugins: [tailwindcss(), preact(), flatPageOutputs()],
     resolve: {
         tsconfigPaths: true,
