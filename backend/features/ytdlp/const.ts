@@ -9,4 +9,4 @@ export const ytdlpExec = () =>
     configuredYtdlpExec && existsSync(configuredYtdlpExec)
         ? configuredYtdlpExec
         : "yt-dlp";
-export const searchResultCount = 50;
+export const searchResultCount = 10;

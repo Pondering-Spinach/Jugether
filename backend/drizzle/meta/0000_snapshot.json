@@ -692,7 +692,378 @@
         "tables": {},
         "columns": {}
     },
-    "internal": {
-        "indexes": {}
+    "user": {
+        "name": "user",
+        "columns": {
+            "id": {
+                "name": "id",
+                "type": "text",
+                "primaryKey": true,
+                "notNull": true,
+                "autoincrement": false
+            },
+            "name": {
+                "name": "name",
+                "type": "text",
+                "primaryKey": false,
+                "notNull": true,
+                "autoincrement": false
+            },
+            "email": {
+                "name": "email",
+                "type": "text",
+                "primaryKey": false,
+                "notNull": true,
+                "autoincrement": false
+            },
+            "email_verified": {
+                "name": "email_verified",
+                "type": "integer",
+                "primaryKey": false,
+                "notNull": true,
+                "autoincrement": false,
+                "default": false
+            },
+            "image": {
+                "name": "image",
+                "type": "text",
+                "primaryKey": false,
+                "notNull": false,
+                "autoincrement": false
+            },
+            "created_at": {
+                "name": "created_at",
+                "type": "integer",
+                "primaryKey": false,
+                "notNull": true,
+                "autoincrement": false,
+                "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
+            },
+            "updated_at": {
+                "name": "updated_at",
+                "type": "integer",
+                "primaryKey": false,
+                "notNull": true,
+                "autoincrement": false,
+                "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
+            },
+            "username": {
+                "name": "username",
+                "type": "text",
+                "primaryKey": false,
+                "notNull": false,
+                "autoincrement": false
+            },
+            "singleton": {
+                "name": "singleton",
+                "type": "integer",
+                "primaryKey": false,
+                "notNull": true,
+                "autoincrement": false,
+                "default": 1
+            }
+        },
+        "indexes": {
+            "user_email_unique": {
+                "name": "user_email_unique",
+                "columns": ["email"],
+                "isUnique": true
+            },
+            "user_username_unique": {
+                "name": "user_username_unique",
+                "columns": ["username"],
+                "isUnique": true
+            },
+            "user_singleton_unique": {
+                "name": "user_singleton_unique",
+                "columns": ["singleton"],
+                "isUnique": true
+            }
+        },
+        "foreignKeys": {},
+        "compositePrimaryKeys": {},
+        "uniqueConstraints": {},
+        "checkConstraints": {}
+    },
+    "verification": {
+        "name": "verification",
+        "columns": {
+            "id": {
+                "name": "id",
+                "type": "text",
+                "primaryKey": true,
+                "notNull": true,
+                "autoincrement": false
+            },
+            "identifier": {
+                "name": "identifier",
+                "type": "text",
+                "primaryKey": false,
+                "notNull": true,
+                "autoincrement": false
+            },
+            "value": {
+                "name": "value",
+                "type": "text",
+                "primaryKey": false,
+                "notNull": true,
+                "autoincrement": false
+            },
+            "expires_at": {
+                "name": "expires_at",
+                "type": "integer",
+                "primaryKey": false,
+                "notNull": true,
+                "autoincrement": false
+            },
+            "created_at": {
+                "name": "created_at",
+                "type": "integer",
+                "primaryKey": false,
+                "notNull": true,
+                "autoincrement": false,
+                "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
+            },
+            "updated_at": {
+                "name": "updated_at",
+                "type": "integer",
+                "primaryKey": false,
+                "notNull": true,
+                "autoincrement": false,
+                "default": "(cast(unixepoch('subsecond') * 1000 as integer))"
+            }
+        },
+        "indexes": {
+            "verification_identifier_idx": {
+                "name": "verification_identifier_idx",
+                "columns": ["identifier"],
+                "isUnique": false
+            }
+        },
+        "foreignKeys": {},
+        "compositePrimaryKeys": {},
+        "uniqueConstraints": {},
+        "checkConstraints": {}
+    },
+    "parties": {
+        "name": "parties",
+        "columns": {
+            "id": {
+                "name": "id",
+                "type": "text",
+                "primaryKey": true,
+                "notNull": true,
+                "autoincrement": false
+            },
+            "active": {
+                "name": "active",
+                "type": "integer",
+                "primaryKey": false,
+                "notNull": true,
+                "autoincrement": false,
+                "default": true
+            }
+        },
+        "indexes": {
+            "parties_one_active": {
+                "name": "parties_one_active",
+                "columns": ["active"],
+                "isUnique": true,
+                "where": "\"parties\".\"active\" = 1"
+            }
+        },
+        "foreignKeys": {},
+        "compositePrimaryKeys": {},
+        "uniqueConstraints": {},
+        "checkConstraints": {}
+    },
+    "queues": {
+        "name": "queues",
+        "columns": {
+            "id": {
+                "name": "id",
+                "type": "integer",
+                "primaryKey": true,
+                "notNull": true,
+                "autoincrement": true
+            },
+            "partyId": {
+                "name": "partyId",
+                "type": "text",
+                "primaryKey": false,
+                "notNull": true,
+                "autoincrement": false
+            },
+            "videoId": {
+                "name": "videoId",
+                "type": "text",
+                "primaryKey": false,
+                "notNull": true,
+                "autoincrement": false
+            },
+            "queuedAt": {
+                "name": "queuedAt",
+                "type": "integer",
+                "primaryKey": false,
+                "notNull": true,
+                "autoincrement": false
+            },
+            "playedAt": {
+                "name": "playedAt",
+                "type": "integer",
+                "primaryKey": false,
+                "notNull": false,
+                "autoincrement": false
+            },
+            "skippedAt": {
+                "name": "skippedAt",
+                "type": "integer",
+                "primaryKey": false,
+                "notNull": false,
+                "autoincrement": false
+            },
+            "startedAt": {
+                "name": "startedAt",
+                "type": "integer",
+                "primaryKey": false,
+                "notNull": false,
+                "autoincrement": false
+            }
+        },
+        "indexes": {},
+        "foreignKeys": {
+            "queues_partyId_parties_id_fk": {
+                "name": "queues_partyId_parties_id_fk",
+                "tableFrom": "queues",
+                "tableTo": "parties",
+                "columnsFrom": ["partyId"],
+                "columnsTo": ["id"],
+                "onDelete": "no action",
+                "onUpdate": "no action"
+            },
+            "queues_videoId_videos_id_fk": {
+                "name": "queues_videoId_videos_id_fk",
+                "tableFrom": "queues",
+                "tableTo": "videos",
+                "columnsFrom": ["videoId"],
+                "columnsTo": ["id"],
+                "onDelete": "no action",
+                "onUpdate": "no action"
+            }
+        },
+        "compositePrimaryKeys": {},
+        "uniqueConstraints": {},
+        "checkConstraints": {}
+    },
+    "votes": {
+        "name": "votes",
+        "columns": {
+            "sessionId": {
+                "name": "sessionId",
+                "type": "text",
+                "primaryKey": false,
+                "notNull": true,
+                "autoincrement": false
+            },
+            "queueEntry": {
+                "name": "queueEntry",
+                "type": "integer",
+                "primaryKey": false,
+                "notNull": true,
+                "autoincrement": false
+            },
+            "positive": {
+                "name": "positive",
+                "type": "integer",
+                "primaryKey": false,
+                "notNull": true,
+                "autoincrement": false
+            }
+        },
+        "indexes": {},
+        "foreignKeys": {
+            "votes_queueEntry_queues_id_fk": {
+                "name": "votes_queueEntry_queues_id_fk",
+                "tableFrom": "votes",
+                "tableTo": "queues",
+                "columnsFrom": ["queueEntry"],
+                "columnsTo": ["id"],
+                "onDelete": "no action",
+                "onUpdate": "no action"
+            }
+        },
+        "compositePrimaryKeys": {
+            "votes_sessionId_queueEntry_pk": {
+                "columns": ["sessionId", "queueEntry"],
+                "name": "votes_sessionId_queueEntry_pk"
+            }
+        },
+        "uniqueConstraints": {},
+        "checkConstraints": {}
+    },
+    "guestSessions": {
+        "name": "guestSessions",
+        "columns": {
+            "id": {
+                "name": "id",
+                "type": "text",
+                "primaryKey": true,
+                "notNull": true,
+                "autoincrement": false
+            },
+            "partyId": {
+                "name": "partyId",
+                "type": "text",
+                "primaryKey": false,
+                "notNull": true,
+                "autoincrement": false
+            }
+        },
+        "indexes": {},
+        "foreignKeys": {
+            "guestSessions_partyId_parties_id_fk": {
+                "name": "guestSessions_partyId_parties_id_fk",
+                "tableFrom": "guestSessions",
+                "tableTo": "parties",
+                "columnsFrom": ["partyId"],
+                "columnsTo": ["id"],
+                "onDelete": "no action",
+                "onUpdate": "no action"
+            }
+        },
+        "compositePrimaryKeys": {},
+        "uniqueConstraints": {},
+        "checkConstraints": {}
+    },
+    "videos": {
+        "name": "videos",
+        "columns": {
+            "id": {
+                "name": "id",
+                "type": "text",
+                "primaryKey": true,
+                "notNull": true,
+                "autoincrement": false
+            },
+            "artist": {
+                "name": "artist",
+                "type": "text",
+                "primaryKey": false,
+                "notNull": true,
+                "autoincrement": false
+            },
+            "song": {
+                "name": "song",
+                "type": "text",
+                "primaryKey": false,
+                "notNull": true,
+                "autoincrement": false
+            }
+        },
+        "indexes": {},
+        "foreignKeys": {},
+        "compositePrimaryKeys": {},
+        "uniqueConstraints": {},
+        "checkConstraints": {}
     }
 }

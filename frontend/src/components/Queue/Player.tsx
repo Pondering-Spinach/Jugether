@@ -9,6 +9,8 @@ import {
 } from "react-icons/io5";
 import { useShallow } from "zustand/shallow";
 import { queueStore } from "./store";
+import { thumbnailUrl } from "./thumbnail";
+import { TrackName } from "./TrackName";
 
 export function Player({
     class: _class,
@@ -114,18 +116,18 @@ export function Player({
             >
                 {playing && (
                     <figure>
-                        <img
-                            src={
-                                playing?.thumbnails?.reduce((acc, curr) =>
-                                    curr.width > acc.width ? curr : acc,
-                                )?.url
-                            }
-                            alt="now playing"
-                        />
+                        <img src={thumbnailUrl(playing.id, "hq720")} alt="" />
                     </figure>
                 )}
                 <div class="card-body gap-4 md:gap-8 justify-between min-w-96">
-                    <h2 class="card-title">{playing?.title}</h2>
+                    {playing && (
+                        <h2 class="card-title leading-6 break-words">
+                            <TrackName
+                                artist={playing.artist}
+                                song={playing.song}
+                            />
+                        </h2>
+                    )}
                     {enableControls && (
                         <div class="flex flex-col gap-4 md:gap-8">
                             <div class="card-actions self-center">

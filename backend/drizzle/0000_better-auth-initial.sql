@@ -89,22 +89,8 @@ CREATE TABLE `guestSessions` (
 	FOREIGN KEY (`partyId`) REFERENCES `parties`(`id`) ON UPDATE no action ON DELETE no action
 );
 --> statement-breakpoint
-CREATE TABLE `thumbs` (
-	`video` text,
-	`url` text,
-	`height` integer,
-	`width` integer,
-	PRIMARY KEY(`video`, `width`),
-	FOREIGN KEY (`video`) REFERENCES `videos`(`id`) ON UPDATE no action ON DELETE no action
-);
---> statement-breakpoint
 CREATE TABLE `videos` (
 	`id` text PRIMARY KEY NOT NULL,
-	`url` text,
-	`duration` integer,
-	`channel` text,
-	`channel_id` text,
-	`channel_url` text,
-	`title` text,
-	`channel_is_verified` integer
+	`artist` text NOT NULL,
+	`song` text NOT NULL
 );

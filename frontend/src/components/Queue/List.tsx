@@ -8,6 +8,8 @@ import {
 } from "react-icons/io5";
 import { useShallow } from "zustand/react/shallow";
 import { queueStore } from "./store";
+import { thumbnailUrl } from "./thumbnail";
+import { TrackName } from "./TrackName";
 import { updateVote } from "./useQueue";
 
 function deleteVideo(videoId: string) {
@@ -31,16 +33,16 @@ export function List({
                     <div class="flex items-center">
                         <img
                             class="w-16 md:w-24 rounded-box"
-                            src={
-                                video.thumbnails?.reduce((acc, curr) =>
-                                    curr.width > acc.width ? curr : acc,
-                                )?.url
-                            }
+                            src={thumbnailUrl(video.id)}
+                            alt=""
                         />
                     </div>
-                    <div class="flex items-center">
-                        <p class="max-h-12 leading-6 md:leading-12 overflow-hidden text-ellipsis">
-                            {video.title}
+                    <div class="flex items-center min-w-0">
+                        <p class="leading-5 break-words">
+                            <TrackName
+                                artist={video.artist}
+                                song={video.song}
+                            />
                         </p>
                     </div>
                     <div class="flex justify-between items-center gap-2 h-12 border-0 rounded-2xl">

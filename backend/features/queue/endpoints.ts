@@ -39,14 +39,7 @@ export const registerQueueRoutes = (app: App) => {
                 isNull(queues.skippedAt),
             ),
             columns: { queuedAt: true, startedAt: true },
-            with: {
-                votes: { columns: { positive: true } },
-                video: {
-                    with: {
-                        thumbnails: { columns: { width: true, url: true } },
-                    },
-                },
-            },
+            with: { votes: { columns: { positive: true } }, video: true },
         });
         const entries: QueueVideo[] = queuedVideos.map((entry) => ({
             ...entry.video,
@@ -158,7 +151,6 @@ export const registerQueueRoutes = (app: App) => {
         if (!videoId) return new Response(undefined, { status: 400 });
         const videoInfo = await db.query.videos.findFirst({
             where: eq(videos.id, videoId),
-            with: { thumbnails: { columns: { width: true, url: true } } },
         });
         if (!videoInfo) return new Response(undefined, { status: 400 });
         const queuedAt = Date.now();
